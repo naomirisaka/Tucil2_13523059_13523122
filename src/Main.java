@@ -11,30 +11,119 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.print("Masukkan alamat absolut gambar yang ingin dikompresi: ");
-        String inputPath = scanner.nextLine();
+        System.out.println("================================================================================");
+        System.out.println("                           Program Kompresi Gambar");
+        System.out.println("                           dengan Quadtree Method");
+        System.out.println("================================================================================");
 
-        System.out.println("Metode pengukuran error:");
+        String fileName = "";
+        while (true) {
+            System.out.println();
+            System.out.print("Masukkan nama file gambar (diakhiri dengan .jpg, .jpeg, atau .png): ");
+            fileName = scanner.nextLine();
+            if (fileName.toLowerCase().endsWith(".jpg") || fileName.toLowerCase().endsWith(".jpeg")|| 
+            fileName.toLowerCase().endsWith(".png")) {
+                break;
+            } else {
+                System.out.println("Format file tidak didukung. Harus diakhiri dengan .jpg atau .png.");
+            }
+        }
+        String inputPath = "../test/input/" + fileName;
+
+        File inputFile = new File(inputPath);
+        if (!inputFile.exists()) {
+            System.out.println("File input tidak ditemukan: " + inputPath);
+            return;
+        }
+
+        System.out.println();
+        System.out.println("================================================================================");
+        System.out.println("METODE PENGUKURAN ERROR:");
+        System.out.println("================================================================================");
         System.out.println("1. Variance");
         System.out.println("2. Mean Absolute Deviation (MAD)");
         System.out.println("3. Max Pixel Difference");
         System.out.println("4. Entropy");
-        System.out.print("Masukkan metode yang ingin digunakan: ");   
-        int method = scanner.nextInt();
+        System.out.println("5. Structural Similarity Index (SSIM)");
+        System.out.println("================================================================================");
+        int method = 0;
+        while (true) {
+            System.out.print("Masukkan metode yang ingin digunakan: ");
+            if (scanner.hasNextInt()) {
+                method = scanner.nextInt();
+                if (method >= 1 && method <= 5) {
+                    break;
+                } else {
+                    System.out.println("Masukkan angka antara 1 sampai 5.");
+                }
+            } else {
+                System.out.println("Input harus berupa angka.");
+                scanner.next(); 
+            }
+        }
 
-        System.out.print("Masukkan nilai ambang batas (threshold): ");
-        double threshold = scanner.nextDouble();
+        if (method == 5) {
+            System.out.println();
+            System.out.println("================================================================================");
+            System.out.println("Anda memilih metode SSIM.");
+            System.out.println("Threshold SSIM berkisar antara 0 sampai 1.");
+            System.out.println("Semakin tinggi threshold, maka blok akan digabung jika sangat mirip.");
+            System.out.println("Semakin rendah threshold, maka blok digabung walau kurang mirip.");
+            System.out.println("================================================================================");
+            System.out.println();
+        } else {
+            System.out.println();
+        }
 
-        System.out.print("Masukkan ukuran blok minimum: ");
-        int minBlockSize = scanner.nextInt();
+        double threshold = 0;
+        if (method == 5) {
+            while (true) {
+                System.out.print("Masukkan nilai ambang batas (threshold SSIM antara 0 dan 1): ");
+                threshold = scanner.nextDouble();
+                if (threshold >= 0 && threshold <= 1) {
+                    break;
+                } else {
+                    System.out.println("Nilai threshold SSIM harus antara 0 dan 1.");
+                }
+            }
+        } else {
+            System.out.print("Masukkan nilai ambang batas (threshold): ");
+            threshold = scanner.nextDouble();
+        }
 
-        System.out.print("Masukkan alamat absolut gambar hasil kompresi: ");
+        int minBlockSize = 0;
+        while (true) {
+            System.out.print("Masukkan ukuran blok minimum: ");
+            minBlockSize = scanner.nextInt();
+            if (minBlockSize > 0) {
+                break;
+            } else {
+                System.out.println("Ukuran blok minimum harus lebih besar dari 0.");
+            }
+        }
+
         scanner.nextLine();
-        String outputPath = scanner.nextLine();
-        scanner.close();
+
+        String outputName = "";
+        while (true) {
+            System.out.print("Masukkan nama file hasil kompresi (diakhiri dengan .jpg, .jpeg, atau .png): ");
+            outputName = scanner.nextLine().trim().toLowerCase();
+            if (outputName.endsWith(".jpg") || outputName.endsWith(".jpeg") || outputName.endsWith(".png")) {
+                break;
+            } else {
+                System.out.println("Format file tidak didukung. Harus berakhir dengan .jpg, .jpeg, atau .png.");
+            }
+        }
+
+        String outputPath = "../test/output/" + outputName;
+
+        String format = outputName.substring(outputName.lastIndexOf('.') + 1);
+        if (format.equals("jpeg")) {
+            format = "jpg";
+        }
 
         try {
-            BufferedImage ogImage = ImageIO.read(new File(inputPath));
+            BufferedImage ogImage = ImageIO.read(inputFile);
             int ogSize = (int) new File(inputPath).length();
             
             long startTime = System.nanoTime();
@@ -48,6 +137,9 @@ public class Main {
             double executionTime = (endTime - startTime) / 1e6;
 
             System.out.println();
+            System.out.println("================================================================================");
+            System.out.println("HASIL KOMPRESI GAMBAR");
+            System.out.println("================================================================================");
             System.out.println("Kompresi gambar berhasil.");
             System.out.println("Waktu eksekusi: " + executionTime + " ms");
             System.out.println("Ukuran gambar asli: " + ogSize + " bytes");
@@ -55,9 +147,17 @@ public class Main {
             System.out.printf("Persentase kompresi: %.2f%%\n", compressionRatio);
             System.out.println("Keadalaman pohon: " + maxDepth);
             System.out.println("Jumlah simpul pada pohon: " + nodeAmt);
+            System.out.println("================================================================================");
             System.out.println("Gambar hasil kompresi disimpan di: " + outputPath);
+            System.out.println("================================================================================");
+            System.out.println();
         } catch (Exception e) {
+            System.out.println();
+            System.out.println("================================================================================");
+            System.out.println("HASIL KOMPRESI GAMBAR");
+            System.out.println("================================================================================");
             System.out.println("Gambar gagal dikompresi: " + e.getMessage());
+            System.out.println();
         }
     }
 
@@ -93,24 +193,148 @@ public class Main {
             case 2: return calculateMAD(img, x, y, w, h) <= threshold;
             case 3: return calculateMaxPixelDifference(img, x, y, w, h) <= threshold;
             case 4: return calculateEntropy(img, x, y, w, h) <= threshold;
+            case 5: return calculateSSIM(img, x, y, w, h) >= threshold;
             default: return false;
         }
     }
 
     private static double calculateVariance(BufferedImage img, int x, int y, int w, int h) {
-        return 100; // variance calculation not done
+        long sumR = 0, sumG = 0, sumB = 0;
+        int count = 0;
+    
+        for (int i = x; i < x + w; i++) {
+            for (int j = y; j < y + h; j++) {
+                Color c = new Color(img.getRGB(i, j));
+                sumR += c.getRed();
+                sumG += c.getGreen();
+                sumB += c.getBlue();
+                count++;
+            }
+        }
+    
+        double avgR = sumR / (double) count;
+        double avgG = sumG / (double) count;
+        double avgB = sumB / (double) count;
+    
+        double variance = 0.0;
+        for (int i = x; i < x + w; i++) {
+            for (int j = y; j < y + h; j++) {
+                Color c = new Color(img.getRGB(i, j));
+                variance += Math.pow(c.getRed() - avgR, 2);
+                variance += Math.pow(c.getGreen() - avgG, 2);
+                variance += Math.pow(c.getBlue() - avgB, 2);
+            }
+        }
+    
+        return variance / count; 
     }
     
     private static double calculateMAD(BufferedImage img, int x, int y, int w, int h) {
-        return 100; // mad calculation not done
+        int avgRGB = getAvgColor(img, x, y, w, h);
+        Color avgColor = new Color(avgRGB);
+    
+        double totalDiff = 0;
+        int count = 0;
+    
+        for (int i = x; i < x + w; i++) {
+            for (int j = y; j < y + h; j++) {
+                Color c = new Color(img.getRGB(i, j));
+                int diff = Math.abs(c.getRed() - avgColor.getRed()) +
+                           Math.abs(c.getGreen() - avgColor.getGreen()) +
+                           Math.abs(c.getBlue() - avgColor.getBlue());
+                totalDiff += diff;
+                count++;
+            }
+        }
+    
+        return totalDiff / count;
     }
     
     private static double calculateMaxPixelDifference(BufferedImage img, int x, int y, int w, int h) {
-        return 100; // max pixel difference calculation not done
+        int avgRGB = getAvgColor(img, x, y, w, h);
+        Color avgColor = new Color(avgRGB);
+    
+        int maxDiff = 0;
+        for (int i = x; i < x + w; i++) {
+            for (int j = y; j < y + h; j++) {
+                Color c = new Color(img.getRGB(i, j)); 
+                int diff = Math.abs(c.getRed() - avgColor.getRed()) +
+                           Math.abs(c.getGreen() - avgColor.getGreen()) +
+                           Math.abs(c.getBlue() - avgColor.getBlue());
+                maxDiff = Math.max(maxDiff, diff);
+            }
+        }
+    
+        return maxDiff;
     }
     
     private static double calculateEntropy(BufferedImage img, int x, int y, int w, int h) {
-        return 100; // entropy calculation not done
+        int[] histogram = new int[256];
+        int total = 0;
+
+        for (int i = x; i < x + w; i++) {
+            for (int j = y; j < y + h; j++) {
+                Color c = new Color(img.getRGB(i, j));
+                int gray = (c.getRed() + c.getGreen() + c.getBlue()) / 3;
+                histogram[gray]++;
+                total++;
+            }
+        }
+
+        double entropy = 0.0;
+        for (int i = 0; i < 256; i++) {
+            if (histogram[i] > 0) {
+                double p = (double) histogram[i] / total;
+                entropy -= p * (Math.log(p) / Math.log(2)); 
+            }
+        }
+
+        return entropy;
+    }
+
+    private static double calculateSSIM(BufferedImage original, int x, int y, int w, int h) {
+        int count = w * h;
+        double C1 = 6.5025, C2 = 58.5225;
+    
+        Color avgColor = new Color(getAvgColor(original, x, y, w, h));
+        
+        double meanX = 0, meanY = 0;
+        double varX = 0, varY = 0;
+        double covXY = 0;
+    
+        for (int i = x; i < x + w; i++) {
+            for (int j = y; j < y + h; j++) {
+                Color c = new Color(original.getRGB(i, j));
+                int r1 = c.getRed();
+                int r2 = avgColor.getRed();
+    
+                meanX += r1;
+                meanY += r2;
+            }
+        }
+    
+        meanX /= count;
+        meanY /= count;
+    
+        for (int i = x; i < x + w; i++) {
+            for (int j = y; j < y + h; j++) {
+                Color c = new Color(original.getRGB(i, j));
+                int r1 = c.getRed();
+                int r2 = avgColor.getRed();
+    
+                varX += Math.pow(r1 - meanX, 2);
+                varY += Math.pow(r2 - meanY, 2);
+                covXY += (r1 - meanX) * (r2 - meanY);
+            }
+        }
+    
+        varX /= count;
+        varY /= count;
+        covXY /= count;
+    
+        double numerator = (2 * meanX * meanY + C1) * (2 * covXY + C2);
+        double denominator = (meanX * meanX + meanY * meanY + C1) * (varX + varY + C2);
+        return numerator / denominator;
     }
 
     private static int getAvgColor(BufferedImage img, int x, int y, int w, int h) {
