@@ -3,10 +3,21 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Scanner;
 import javax.imageio.ImageIO;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.imageio.stream.FileImageOutputStream;
+import java.awt.image.RenderedImage;
 
 public class Main {
     private static int nodeAmt = 0;
     private static int maxDepth = 0;
+    private static ArrayList<BufferedImage> gifFrames = new ArrayList<>();
+    static Map<Integer, BufferedImage> gifSnapshots = new HashMap<>();
+    private static boolean exportGIF = false;
+    private static String gifPath = "";
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -103,6 +114,11 @@ public class Main {
         }
 
         scanner.nextLine();
+        System.out.print("Apakah Anda ingin mengekspor proses ke dalam GIF? (ya/tidak): ");
+        String gifOption = scanner.nextLine().trim().toLowerCase();
+        if (gifOption.equals("ya") || gifOption.equals("y")) {
+            exportGIF = true;
+        }
 
         String outputName = "";
         while (true) {
@@ -113,6 +129,10 @@ public class Main {
             } else {
                 System.out.println("Format file tidak didukung. Harus berakhir dengan .jpg, .jpeg, atau .png.");
             }
+        }
+
+        if (exportGIF) {
+            gifPath = "../test/output/" + outputName.replaceAll("\\.[^.]+$", ".gif");
         }
 
         String outputPath = "../test/output/" + outputName;
@@ -166,6 +186,26 @@ public class Main {
         int height = img.getHeight();
         BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         quadtreeCompress(img, result, 0, 0, width, height, 0, method, threshold, minSize);
+        if (exportGIF) {
+            gifFrames.clear(); // just in case
+            gifSnapshots.keySet().stream()
+                .sorted()
+                .forEach(depth -> gifFrames.add(gifSnapshots.get(depth)));
+        }
+        if (exportGIF) {
+            try {
+                FileImageOutputStream outputGIF = new FileImageOutputStream(new File(gifPath));
+                GIFSequenceWriter writer = new GIFSequenceWriter(outputGIF, BufferedImage.TYPE_INT_RGB, 500, true);
+                for (BufferedImage frame : gifFrames) {
+                    writer.writeToSequence(frame);
+                }
+                writer.close();
+                outputGIF.close();
+                System.out.println("GIF proses kompresi berhasil disimpan di: " + gifPath);
+            } catch (IOException e) {
+                System.out.println("Gagal menyimpan GIF: " + e.getMessage());
+            }
+        }
         return result;
     }
 
@@ -176,6 +216,11 @@ public class Main {
         if (sizeX <= minSize || sizeY <= minSize || shouldMerge(original, x, y, sizeX, sizeY, method, threshold)) {
             int avgColor = getAvgColor(original, x, y, sizeX, sizeY);
             fillBlock(output, x, y, sizeX, sizeY, avgColor);
+            if (exportGIF && depth <= 10 && !gifSnapshots.containsKey(depth)) {
+                BufferedImage snapshot = new BufferedImage(output.getWidth(), output.getHeight(), BufferedImage.TYPE_INT_RGB);
+                snapshot.getGraphics().drawImage(output, 0, 0, null);
+                gifSnapshots.put(depth, snapshot);
+            }
         } else {
             int halfX = sizeX / 2;
             int halfY = sizeY / 2;
