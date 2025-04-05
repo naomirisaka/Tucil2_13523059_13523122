@@ -39,7 +39,7 @@ public class Compression {
             case 2: return ErrorEvaluation.calculateMAD(img, x, y, w, h) <= threshold;
             case 3: return ErrorEvaluation.calculateMaxPixelDifference(img, x, y, w, h) <= threshold;
             case 4: return ErrorEvaluation.calculateEntropy(img, x, y, w, h) <= threshold;
-            case 5: return ErrorEvaluation.calculateSSIM(img, x, y, w, h) <= threshold;
+            case 5: return ErrorEvaluation.calculateSSIM(img, x, y, w, h) >= threshold;
             default: return false;
         }
     }

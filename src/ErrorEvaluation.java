@@ -15,7 +15,7 @@ public class ErrorEvaluation {
         }
         return new Color(r / count, g / count, b / count).getRGB();
     }
-    
+
     public static double calculateVariance(BufferedImage img, int x, int y, int w, int h) {
         long sumR = 0, sumG = 0, sumB = 0;
         int count = 0;
@@ -111,47 +111,64 @@ public class ErrorEvaluation {
     }
 
     public static double calculateSSIM(BufferedImage original, int x, int y, int w, int h) {
-        int count = w * h;
-        double C1 = 6.5025, C2 = 58.5225;
-    
         Color avgColor = new Color(getAvgColor(original, x, y, w, h));
-        
-        double meanX = 0, meanY = 0;
-        double varX = 0, varY = 0;
-        double covXY = 0;
+
+        double ssimR = calculateSSIMChannel(original, avgColor.getRed(), x, y, w, h, 'r');
+        double ssimG = calculateSSIMChannel(original, avgColor.getGreen(), x, y, w, h, 'g');
+        double ssimB = calculateSSIMChannel(original, avgColor.getBlue(), x, y, w, h, 'b');
+
+        return 0.2989 * ssimR + 0.5870 * ssimG + 0.1140 * ssimB; // apply weights for RGB channels based on luminosity
+    }
+    
+    private static double calculateSSIMChannel(BufferedImage img, int refValue, int x, int y, int w, int h, char channel) {
+        int count = w * h;
+        double L = 255.0;
+        double K1 = 0.01;
+        double K2 = 0.03;
+        double C1 = Math.pow(K1 * L, 2);
+        double C2 = Math.pow(K2 * L, 2);
+    
+        double meanX = 0, meanY = refValue;
+        double varX = 0, varY = 0, covXY = 0;
     
         for (int i = x; i < x + w; i++) {
             for (int j = y; j < y + h; j++) {
-                Color c = new Color(original.getRGB(i, j));
-                int r1 = c.getRed();
-                int r2 = avgColor.getRed();
+                Color c = new Color(img.getRGB(i, j));
+                int val = switch (channel) {
+                    case 'r' -> c.getRed();
+                    case 'g' -> c.getGreen();
+                    case 'b' -> c.getBlue();
+                    default -> 0;
+                };
     
-                meanX += r1;
-                meanY += r2;
+                meanX += val;
             }
         }
     
         meanX /= count;
-        meanY /= count;
     
         for (int i = x; i < x + w; i++) {
             for (int j = y; j < y + h; j++) {
-                Color c = new Color(original.getRGB(i, j));
-                int r1 = c.getRed();
-                int r2 = avgColor.getRed();
+                Color c = new Color(img.getRGB(i, j));
+                int val = switch (channel) {
+                    case 'r' -> c.getRed();
+                    case 'g' -> c.getGreen();
+                    case 'b' -> c.getBlue();
+                    default -> 0;
+                };
     
-                varX += Math.pow(r1 - meanX, 2);
-                varY += Math.pow(r2 - meanY, 2);
-                covXY += (r1 - meanX) * (r2 - meanY);
+                varX += Math.pow(val - meanX, 2);
+                varY += Math.pow(refValue - meanY, 2); 
+                covXY += (val - meanX) * (refValue - meanY);
             }
         }
     
         varX /= count;
-        varY /= count;
+        varY = 0; 
         covXY /= count;
     
         double numerator = (2 * meanX * meanY + C1) * (2 * covXY + C2);
         double denominator = (meanX * meanX + meanY * meanY + C1) * (varX + varY + C2);
         return numerator / denominator;
-    }
+    }    
 }
