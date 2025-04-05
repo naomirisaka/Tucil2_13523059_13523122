@@ -3,7 +3,6 @@ import java.io.File;
 import java.util.Scanner;
 import javax.imageio.ImageIO;
 
-// to do: threshold validation, threshold validation per method, compression ratio validation (biar ga minus)
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -13,23 +12,25 @@ public class Main {
         System.out.println("                           dengan Quadtree Method");
         System.out.println("================================================================================");
 
-        String inputPath;
+        File inputFile = null;
+        String inputPath = "";
+
         while (true) {
             System.out.println();
             System.out.print("Masukkan nama file gambar (diakhiri dengan .jpg, .jpeg, atau .png): ");
-            inputPath = scanner.nextLine();
-            if (inputPath.toLowerCase().endsWith(".jpg") || inputPath.toLowerCase().endsWith(".jpeg") || 
-                inputPath.toLowerCase().endsWith(".png")) {
-                break;
-            } else {
+            inputPath = scanner.nextLine().trim();
+            
+            if (!(inputPath.toLowerCase().endsWith(".jpg") || inputPath.toLowerCase().endsWith(".jpeg") || inputPath.toLowerCase().endsWith(".png"))) {
                 System.out.println("Format file tidak didukung. Harus diakhiri dengan .jpg, .jpeg, atau .png.");
+                continue;
             }
-        }
 
-        File inputFile = new File(inputPath);
-        if (!inputFile.exists()) {
-            System.out.println("File input tidak ditemukan: " + inputPath);
-            return;
+            inputFile = new File(inputPath);
+            if (!inputFile.exists()) {
+                System.out.println("File input tidak ditemukan: " + inputPath);
+                continue;
+            }
+            break;
         }
 
         System.out.println();
@@ -44,6 +45,7 @@ public class Main {
         System.out.println("================================================================================");
         int method = 0;
         while (true) {
+            System.out.println();
             System.out.print("Masukkan metode yang ingin digunakan: ");
             if (scanner.hasNextInt()) {
                 method = scanner.nextInt();
@@ -55,9 +57,46 @@ public class Main {
             }
         }
 
-        System.out.println();
-        System.out.print("Masukkan nilai ambang batas (threshold): ");
-        double threshold = scanner.nextDouble();
+        double threshold = 0;
+        while (true) {
+            System.out.print("Masukkan nilai ambang batas (threshold): ");
+            threshold = scanner.nextDouble();
+
+            boolean isValid = true;
+
+            switch (method) {
+                case 1:
+                    if (threshold < 0) {
+                        System.out.println("Threshold metode ini tidak boleh bernilai negatif.");
+                        System.out.println();
+                        isValid = false;
+                    }
+                    break;
+                case 2:
+                case 3:
+                    if (threshold < 0 || threshold > 255) {
+                        System.out.println("Threshold metode ini harus bernilai antara 0 sampai 255.");
+                        System.out.println();
+                        isValid = false;
+                    }
+                    break;
+                case 4:
+                    if (threshold < 0 || threshold > 8) {
+                        System.out.println("Threshold metode ini harus bernilai antara 0 sampai 8.");
+                        System.out.println();
+                        isValid = false;
+                    }
+                    break;
+                case 5:
+                    if (threshold < 0 || threshold > 1) {
+                        System.out.println("Threshold metode ini harus bernilai antara 0 sampai 1.");
+                        System.out.println();
+                        isValid = false;
+                    }
+                    break;
+            }
+            if (isValid) break;
+        }
 
         int minBlockSize = 0;
         while (true) {
@@ -72,9 +111,9 @@ public class Main {
         String outputPath;
         while (true) {
             System.out.print("Masukkan nama file hasil kompresi (diakhiri dengan .jpg, .jpeg, atau .png): ");
-            outputPath = scanner.nextLine().trim().toLowerCase();
-            if (outputPath.endsWith(".jpg") || outputPath.endsWith(".jpeg") || outputPath.endsWith(".png")) break;
-            else System.out.println("Format file tidak didukung. Harus berakhir dengan .jpg, .jpeg, atau .png.");
+            outputPath = scanner.nextLine().trim();
+            if (outputPath.toLowerCase().endsWith(".jpg") || outputPath.toLowerCase().endsWith(".jpeg") || outputPath.toLowerCase().endsWith(".png")) break;
+            else System.out.println("Format file tidak didukung. Harus berakhir dengan .jpg, .jpeg, atau .png.\n");
         }
 
         try {
@@ -89,6 +128,7 @@ public class Main {
             int compressedSize = (int) new File(outputPath).length();
 
             double compressionRatio = (1 - (double) compressedSize / ogSize) * 100;
+            
             double executionTime = (endTime - startTime) / 1e6;
 
             System.out.println();
@@ -100,6 +140,9 @@ public class Main {
             System.out.println("Ukuran gambar asli: " + ogSize + " bytes");
             System.out.println("Ukuran gambar hasil kompresi: " + compressedSize + " bytes");
             System.out.printf("Persentase kompresi: %.2f%%\n", compressionRatio);
+            if (compressionRatio < 0) {
+                System.out.println("Gambar hasil kompresi memiliki ukuran lebih besar dari gambar asli.");
+            }
             System.out.println("Keadalaman pohon: " + Compression.getMaxDepth());
             System.out.println("Jumlah simpul pada pohon: " + Compression.getNodeCount());
             System.out.println("================================================================================");
