@@ -127,10 +127,10 @@ public class ErrorEvaluation {
         double K2 = 0.03;
         double C1 = Math.pow(K1 * L, 2);
         double C2 = Math.pow(K2 * L, 2);
-    
+
         double meanX = 0, meanY = refValue;
-        double varX = 0, varY = 0, covXY = 0;
-    
+        double varX = 0, covXY = 0;
+
         for (int i = x; i < x + w; i++) {
             for (int j = y; j < y + h; j++) {
                 Color c = new Color(img.getRGB(i, j));
@@ -140,13 +140,12 @@ public class ErrorEvaluation {
                     case 'b' -> c.getBlue();
                     default -> 0;
                 };
-    
                 meanX += val;
             }
         }
-    
+
         meanX /= count;
-    
+
         for (int i = x; i < x + w; i++) {
             for (int j = y; j < y + h; j++) {
                 Color c = new Color(img.getRGB(i, j));
@@ -156,19 +155,17 @@ public class ErrorEvaluation {
                     case 'b' -> c.getBlue();
                     default -> 0;
                 };
-    
+
                 varX += Math.pow(val - meanX, 2);
-                varY += Math.pow(refValue - meanY, 2); 
                 covXY += (val - meanX) * (refValue - meanY);
             }
         }
-    
+
         varX /= count;
-        varY = 0; 
         covXY /= count;
-    
+
         double numerator = (2 * meanX * meanY + C1) * (2 * covXY + C2);
-        double denominator = (meanX * meanX + meanY * meanY + C1) * (varX + varY + C2);
+        double denominator = (meanX * meanX + meanY * meanY + C1) * (varX + C2);
         return numerator / denominator;
-    }    
+    }
 }
