@@ -3,6 +3,8 @@ import java.io.File;
 import java.util.Scanner;
 import javax.imageio.ImageIO;
 
+// optimalize program for lower time + gif bonus not done 
+
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -217,7 +219,7 @@ public class Main {
             System.out.println("========================================================================================================");
             System.out.println();
         } catch (Exception e) {
-            System.out.println("Gambar gagal dikompresi: " + e.getMessage());
+            System.out.println("Gambar gagal dikompres: " + e.getMessage());
         }
     }
 

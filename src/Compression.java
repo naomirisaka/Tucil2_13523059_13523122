@@ -73,7 +73,7 @@ public class Compression {
         nodeAmt++;
         maxDepth = Math.max(maxDepth, depth);
 
-        if (sizeX <= minSize || sizeY <= minSize || shouldMerge(original, x, y, sizeX, sizeY, method, threshold)) {
+        if (sizeX <= minSize || sizeY <= minSize || isHomogenous(original, x, y, sizeX, sizeY, method, threshold)) {
             int avgColor = ErrorEvaluation.getAvgColor(original, x, y, sizeX, sizeY);
             fillBlock(output, x, y, sizeX, sizeY, avgColor);
         } else {
@@ -90,13 +90,13 @@ public class Compression {
         }
     }
 
-    private static boolean shouldMerge(BufferedImage img, int x, int y, int w, int h, int method, double threshold) {
+    private static boolean isHomogenous(BufferedImage img, int x, int y, int w, int h, int method, double threshold) {
         switch (method) {
-            case 1: return ErrorEvaluation.calculateVariance(img, x, y, w, h) <= threshold;
-            case 2: return ErrorEvaluation.calculateMAD(img, x, y, w, h) <= threshold;
-            case 3: return ErrorEvaluation.calculateMaxPixelDifference(img, x, y, w, h) <= threshold;
-            case 4: return ErrorEvaluation.calculateEntropy(img, x, y, w, h) <= threshold;
-            case 5: return ErrorEvaluation.calculateSSIM(img, x, y, w, h) >= threshold;
+            case 1: return ErrorEvaluation.calculateVariance(img, x, y, w, h) < threshold;
+            case 2: return ErrorEvaluation.calculateMAD(img, x, y, w, h) < threshold;
+            case 3: return ErrorEvaluation.calculateMaxPixelDifference(img, x, y, w, h) < threshold;
+            case 4: return ErrorEvaluation.calculateEntropy(img, x, y, w, h) < threshold;
+            case 5: return ErrorEvaluation.calculateSSIM(img, x, y, w, h) > threshold;
             default: return false;
         }
     }
