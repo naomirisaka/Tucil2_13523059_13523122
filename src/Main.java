@@ -3,12 +3,12 @@ import java.io.File;
 import java.util.Scanner;
 import javax.imageio.ImageIO;
 
-// optimalize program for lower time + gif bonus not done 
-
+// Main class untuk menjalankan program kompresi gambar berbasis Quadtree
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
+        // Header awal
         System.out.println("========================================================================================================");
         printHeader();
         System.out.println("========================================================================================================");
@@ -16,11 +16,13 @@ public class Main {
         File inputFile = null;
         String inputPath = "";
 
+        // Input nama file gambar dan validasi
         while (true) {
             System.out.println();
             System.out.print("Masukkan nama file gambar (diakhiri dengan .jpg, .jpeg, atau .png): ");
             inputPath = scanner.nextLine().trim();
             
+            // Validasi ekstensi file
             if (!(inputPath.toLowerCase().endsWith(".jpg") || inputPath.toLowerCase().endsWith(".jpeg") || inputPath.toLowerCase().endsWith(".png"))) {
                 System.out.println("Format file tidak didukung. Harus diakhiri dengan .jpg, .jpeg, atau .png.");
                 continue;
@@ -34,6 +36,7 @@ public class Main {
             break;
         }
 
+        // Pemilihan metode pengukuran error
         System.out.println();
         System.out.println("========================================================================================================");
         System.out.println("                                        METODE PENGUKURAN ERROR");
@@ -44,6 +47,7 @@ public class Main {
         System.out.println("4. Entropy");
         System.out.println("5. Structural Similarity Index (SSIM)");
         System.out.println("========================================================================================================");
+
         int method = 0;
         while (true) {
             System.out.println();
@@ -58,6 +62,7 @@ public class Main {
             }
         }
 
+        // Penjelasan tambahan untuk metode SSIM
         if (method == 5) {
             System.out.println();
             System.out.println("================================================================================");
@@ -71,6 +76,7 @@ public class Main {
             System.out.println();
         }
 
+        // Input nilai threshold dengan validasi berdasarkan metode
         double threshold = 0;
         while (true) {
             System.out.print("Masukkan nilai ambang batas (threshold): ");
@@ -116,6 +122,7 @@ public class Main {
             if (isValid) break;
         }
 
+        // Input ukuran blok minimum
         int minBlockSize = 0;
         while (true) {
             System.out.print("Masukkan ukuran blok minimum: ");
@@ -134,8 +141,9 @@ public class Main {
         }
         scanner.nextLine();
 
+        // Input target rasio kompresi (opsional)
         double targetRatio = 0;
-        double tolerance = 0; // for now dia adjust sedeket mungkin (0.3%)
+        double tolerance = 0;
 
         while (true) {
             System.out.print("Masukkan target rasio kompresi (0 jika tidak ingin menggunakan fitur ini): ");
@@ -144,27 +152,9 @@ public class Main {
                 if (targetRatio < 0 || targetRatio > 1) {
                     System.out.println("Target rasio kompresi harus berada antara 0 dan 1.\n");
                 } else if (targetRatio == 0) { 
-                    break; // skip tolerance input
+                    break;
                 } else {
                     tolerance = 0.003; // default tolerance
-                        // while (true) {
-                        //     System.out.print("Masukkan toleransi (0 jika ingin menggunakan default): ");
-                        //     if (scanner.hasNextDouble()) {
-                        //         tolerance = scanner.nextDouble();
-                        //         if (tolerance < 0 || tolerance > 1) {
-                        //             System.out.println("Toleransi harus berada antara 0 dan 1.\n");
-                        //         } else {
-                        //             if (tolerance == 0) {
-                        //                 tolerance = 0.003; // default tolerance
-                        //                 System.out.println("Toleransi default digunakan: 0.3%.\n");
-                        //             }
-                        //             break;
-                        //         }
-                        //     } else {
-                        //         System.out.println("Input harus berupa angka.\n");
-                        //         scanner.next();
-                        //     }
-                        // }
                     break;
                 }
             } else {
@@ -172,8 +162,9 @@ public class Main {
                 scanner.next();
             }
         }
-        scanner.nextLine();        
+        scanner.nextLine();
 
+        // Input nama file output dan validasi format
         String outputPath;
         while (true) {
             System.out.print("Masukkan nama file hasil kompresi (diakhiri dengan .jpg, .jpeg, atau .png): ");
@@ -183,11 +174,14 @@ public class Main {
         }
 
         try {
+            // Membaca gambar input
             BufferedImage ogImage = ImageIO.read(inputFile);
             int ogSize = (int) inputFile.length();
-            
+
+            // Kompresi dimulai
             long startTime = System.nanoTime();
             BufferedImage compressedImage;
+
             if (targetRatio == 0) {
                 compressedImage = Compression.compressImage(ogImage, method, threshold, minBlockSize);
             } else {
@@ -202,17 +196,19 @@ public class Main {
                     format
                 );
             }
-            
+
             long endTime = System.nanoTime();
 
+            // Menyimpan gambar hasil kompresi
             String outputFormat = outputPath.substring(outputPath.lastIndexOf('.') + 1).toLowerCase();
             ImageIO.write(compressedImage, outputFormat, new File(outputPath));
             int compressedSize = (int) new File(outputPath).length();
 
+            // Menghitung rasio kompresi dan waktu eksekusi
             double compressionRatio = (1 - (double) compressedSize / ogSize) * 100;
-            
             double executionTime = (endTime - startTime) / 1e6;
 
+            // Menampilkan hasil
             System.out.println();
             System.out.println("========================================================================================================");
             System.out.println("                                        HASIL KOMPRESI GAMBAR");
@@ -236,6 +232,7 @@ public class Main {
         }
     }
 
+    // Fungsi untuk mencetak header ASCII art
     public static void printHeader() {
         System.out.println(" __  _   ___   ___ ___  ____  ____     ___  _____ ____       ____   ____  ___ ___  ____    ____  ____  ");
         System.out.println("|  |/ ] /   \\ |   |   ||    \\|    \\   /  _]/ ___/|    |     /    | /    ||   |   ||    \\  /    ||    \\ ");
