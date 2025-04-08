@@ -58,6 +58,19 @@ public class Main {
             }
         }
 
+        if (method == 5) {
+            System.out.println();
+            System.out.println("================================================================================");
+            System.out.println("Anda memilih metode SSIM.");
+            System.out.println("Threshold SSIM berkisar antara 0 sampai 1.");
+            System.out.println("Semakin tinggi threshold, maka blok akan digabung jika sangat mirip.");
+            System.out.println("Semakin rendah threshold, maka blok digabung walau kurang mirip.");
+            System.out.println("================================================================================");
+            System.out.println();
+        } else {
+            System.out.println();
+        }
+
         double threshold = 0;
         while (true) {
             System.out.print("Masukkan nilai ambang batas (threshold): ");
@@ -212,8 +225,8 @@ public class Main {
             if (compressionRatio < 0) {
                 System.out.println("Gambar hasil kompresi memiliki ukuran lebih besar dari gambar asli.");
             }
-            System.out.println("Keadalaman pohon: " + Compression.getMaxDepth());
-            System.out.println("Jumlah simpul pada pohon: " + Compression.getNodeCount());
+            System.out.println("Keadalaman pohon: " + Compression.maxDepth);
+            System.out.println("Jumlah simpul pada pohon: " + Compression.nodeAmt);
             System.out.println("========================================================================================================");
             System.out.println("Gambar hasil kompresi disimpan di: " + outputPath);
             System.out.println("========================================================================================================");

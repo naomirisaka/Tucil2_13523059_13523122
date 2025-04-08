@@ -3,12 +3,10 @@ import java.io.File;
 import javax.imageio.ImageIO;
 
 public class Compression {
-    private static int nodeAmt = 0;
-    private static int maxDepth = 0;
+    public static int nodeAmt = 0;
+    public static int maxDepth = 0;
 
     public static BufferedImage compressImage(BufferedImage img, int method, double threshold, int minSize) {
-        nodeAmt = 0;
-        maxDepth = 0;
 
         int width = img.getWidth();
         int height = img.getHeight();
@@ -107,13 +105,5 @@ public class Compression {
                 img.setRGB(i, j, color);
             }
         }        
-    }
-
-    public static int getNodeCount() {
-        return nodeAmt;
-    }
-
-    public static int getMaxDepth() {
-        return maxDepth;
     }
 }
