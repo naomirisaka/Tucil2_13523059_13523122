@@ -47,13 +47,6 @@ public class Compression {
                     bestRatioDiff = ratioDiff;
                     bestThreshold = mid;
                     bestImage = tempImage;
-
-                    // Jika sudah dalam toleransi, bisa keluar lebih awal (ga perlu?)
-                    // if (ratioDiff <= tolerance) {
-                    //     System.out.println();
-                    //     System.out.println("Target rasio kompresi dicapai dengan toleransi ± " + (tolerance * 100) + "%.");
-                    //     break;
-                    // }
                 }
 
                 // Sesuaikan batas bawah dan atas binary search
