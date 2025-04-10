@@ -2,13 +2,12 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Scanner;
 import javax.imageio.ImageIO;
+import java.io.IOException;
 
-// Main class untuk menjalankan program kompresi gambar berbasis Quadtree
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        // Header awal
         System.out.println("========================================================================================================");
         printHeader();
         System.out.println("========================================================================================================");
@@ -16,13 +15,11 @@ public class Main {
         File inputFile = null;
         String inputPath = "";
 
-        // Input nama file gambar dan validasi
         while (true) {
             System.out.println();
             System.out.print("Masukkan nama file gambar (diakhiri dengan .jpg, .jpeg, atau .png): ");
             inputPath = scanner.nextLine().trim();
-            
-            // Validasi ekstensi file
+
             if (!(inputPath.toLowerCase().endsWith(".jpg") || inputPath.toLowerCase().endsWith(".jpeg") || inputPath.toLowerCase().endsWith(".png"))) {
                 System.out.println("Format file tidak didukung. Harus diakhiri dengan .jpg, .jpeg, atau .png.");
                 continue;
@@ -36,7 +33,6 @@ public class Main {
             break;
         }
 
-        // Pemilihan metode pengukuran error
         System.out.println();
         System.out.println("========================================================================================================");
         System.out.println("                                        METODE PENGUKURAN ERROR");
@@ -62,7 +58,6 @@ public class Main {
             }
         }
 
-        // Penjelasan tambahan untuk metode SSIM
         if (method == 5) {
             System.out.println();
             System.out.println("================================================================================");
@@ -76,7 +71,6 @@ public class Main {
             System.out.println();
         }
 
-        // Input nilai threshold dengan validasi berdasarkan metode
         double threshold = 0;
         while (true) {
             System.out.print("Masukkan nilai ambang batas (threshold): ");
@@ -122,7 +116,6 @@ public class Main {
             if (isValid) break;
         }
 
-        // Input ukuran blok minimum
         int minBlockSize = 0;
         while (true) {
             System.out.print("Masukkan ukuran blok minimum: ");
@@ -139,9 +132,9 @@ public class Main {
                 scanner.next(); 
             }
         }
+
         scanner.nextLine();
 
-        // Input target rasio kompresi (opsional)
         double targetRatio = 0;
         double tolerance = 0;
 
@@ -154,7 +147,7 @@ public class Main {
                 } else if (targetRatio == 0) { 
                     break;
                 } else {
-                    tolerance = 0.003; // default tolerance
+                    tolerance = 0.003;
                     break;
                 }
             } else {
@@ -164,7 +157,6 @@ public class Main {
         }
         scanner.nextLine();
 
-        // Input nama file output dan validasi format
         String outputPath;
         while (true) {
             System.out.print("Masukkan nama file hasil kompresi (diakhiri dengan .jpg, .jpeg, atau .png): ");
@@ -173,12 +165,15 @@ public class Main {
             else System.out.println("Format file tidak didukung. Harus berakhir dengan .jpg, .jpeg, atau .png.\n");
         }
 
+        System.out.print("Apakah Anda ingin menyimpan proses kompresi sebagai GIF? (ya/tidak): ");
+        String gifOption = scanner.nextLine().trim().toLowerCase();
+        boolean exportGIF = gifOption.equals("ya") || gifOption.equals("y");
+        String gifPath = outputPath.replaceAll("\\.[^.]+$", ".gif");
+
         try {
-            // Membaca gambar input
             BufferedImage ogImage = ImageIO.read(inputFile);
             int ogSize = (int) inputFile.length();
 
-            // Kompresi dimulai
             long startTime = System.nanoTime();
             BufferedImage compressedImage;
 
@@ -199,16 +194,13 @@ public class Main {
 
             long endTime = System.nanoTime();
 
-            // Menyimpan gambar hasil kompresi
             String outputFormat = outputPath.substring(outputPath.lastIndexOf('.') + 1).toLowerCase();
             ImageIO.write(compressedImage, outputFormat, new File(outputPath));
             int compressedSize = (int) new File(outputPath).length();
 
-            // Menghitung rasio kompresi dan waktu eksekusi
             double compressionRatio = (1 - (double) compressedSize / ogSize) * 100;
             double executionTime = (endTime - startTime) / 1e6;
 
-            // Menampilkan hasil
             System.out.println();
             System.out.println("========================================================================================================");
             System.out.println("                                        HASIL KOMPRESI GAMBAR");
@@ -227,11 +219,24 @@ public class Main {
             System.out.println("Gambar hasil kompresi disimpan di: " + outputPath);
             System.out.println("========================================================================================================");
             System.out.println();
+
+            if (exportGIF) {
+                GIFExporter.exportGIFPerDepth(
+                    ogImage,
+                    method,
+                    threshold,
+                    minBlockSize,
+                    gifPath,
+                    Compression.maxDepth,
+                    ogImage.getWidth(),
+                    ogImage.getHeight()
+                );
+            }
+
         } catch (Exception e) {
             System.out.println("Gambar gagal dikompres: " + e.getMessage());
         }
     }
-
     // Fungsi untuk mencetak header ASCII art
     public static void printHeader() {
         System.out.println(" __  _   ___   ___ ___  ____  ____     ___  _____ ____       ____   ____  ___ ___  ____    ____  ____  ");

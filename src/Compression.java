@@ -96,7 +96,7 @@ public class Compression {
     }
 
     // Mengecek apakah blok homogen berdasarkan metode dan threshold tertentu
-    private static boolean isHomogenous(BufferedImage img, int x, int y, int w, int h, int method, double threshold) {
+    public static boolean isHomogenous(BufferedImage img, int x, int y, int w, int h, int method, double threshold) {
         switch (method) {
             case 1: return ErrorEvaluation.calculateVariance(img, x, y, w, h) < threshold;
             case 2: return ErrorEvaluation.calculateMAD(img, x, y, w, h) < threshold;
