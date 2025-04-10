@@ -6,7 +6,7 @@
 | Naomi Risaka Sitorus | 13523122 |
 
 ## Deskripsi
-Program ini mampu melakukan kompresi gambar dengan metode quadtree yang menerapkan pendekatan divide and conquer. Secara rekursif, blok gambar dibagi menjadi 4 upa-blok hingga ukurannya mencapai ukuran blok minimum atau blok dianggap homogen sebab nilai keseragaman warnanya di bawah threshold. Program ini menghasilkan keluaran berupa gambar hasil kompresi serta GIF proses pembentukan quadtree untuk kompresi (bonus).
+Program ini mampu melakukan kompresi gambar dengan metode quadtree yang menerapkan pendekatan divide and conquer. Secara rekursif, blok gambar dibagi menjadi 4 upa-blok hingga ukurannya mencapai ukuran blok minimum atau blok dianggap homogen sebab nilai keseragaman warnanya di bawah threshold. Nilai keseragaman warna gambar diperoleh dari salah satu dari 5 metode pengukuran error RGB, yaitu variance, mean absolute deviation (MAD), maximum pixel difference, entropy, atau structural similarity index measure (SSIM). Program ini juga dapat melakukan kompresi gambar sesuai target rasio yang diinginkan pengguna di mana threshold disesuaikan secara otomatis. Program ini menghasilkan keluaran berupa gambar hasil kompresi serta GIF proses pembentukan quadtree untuk kompresi (opsional). 
 
 ## Cara Menjalankan
 > [!NOTE]
