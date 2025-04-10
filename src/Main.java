@@ -4,18 +4,10 @@ import java.io.File;
 import java.util.Scanner;
 import javax.imageio.ImageIO;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.imageio.stream.FileImageOutputStream;
-import java.awt.image.RenderedImage;
 
 public class Main {
     private static int nodeAmt = 0;
     private static int maxDepth = 0;
-    private static ArrayList<BufferedImage> gifFrames = new ArrayList<>();
-    static Map<Integer, BufferedImage> gifSnapshots = new HashMap<>();
     private static boolean exportGIF = false;
     private static String gifPath = "";
 
@@ -145,12 +137,12 @@ public class Main {
         try {
             BufferedImage ogImage = ImageIO.read(inputFile);
             int ogSize = (int) new File(inputPath).length();
-            
+
             long startTime = System.nanoTime();
             BufferedImage compressedImage = compressImage(ogImage, method, threshold, minBlockSize);
             long endTime = System.nanoTime();
 
-            ImageIO.write(compressedImage, "png", new File(outputPath)); // no default extension yet
+            ImageIO.write(compressedImage, "png", new File(outputPath));
             int compressedSize = (int) new File(outputPath).length();
 
             double compressionRatio = (1 - (double) compressedSize / ogSize) * 100;
@@ -171,6 +163,20 @@ public class Main {
             System.out.println("Gambar hasil kompresi disimpan di: " + outputPath);
             System.out.println("================================================================================");
             System.out.println();
+
+            if (exportGIF) {
+                GIFExporter.exportGIFPerDepth(
+                    ogImage,
+                    method,
+                    threshold,
+                    minBlockSize,
+                    gifPath,
+                    maxDepth,
+                    ogImage.getWidth(),
+                    ogImage.getHeight()
+                );
+            }
+
         } catch (Exception e) {
             System.out.println();
             System.out.println("================================================================================");
@@ -186,26 +192,6 @@ public class Main {
         int height = img.getHeight();
         BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         quadtreeCompress(img, result, 0, 0, width, height, 0, method, threshold, minSize);
-        if (exportGIF) {
-            gifFrames.clear(); // just in case
-            gifSnapshots.keySet().stream()
-                .sorted()
-                .forEach(depth -> gifFrames.add(gifSnapshots.get(depth)));
-        }
-        if (exportGIF) {
-            try {
-                FileImageOutputStream outputGIF = new FileImageOutputStream(new File(gifPath));
-                GIFSequenceWriter writer = new GIFSequenceWriter(outputGIF, BufferedImage.TYPE_INT_RGB, 500, true);
-                for (BufferedImage frame : gifFrames) {
-                    writer.writeToSequence(frame);
-                }
-                writer.close();
-                outputGIF.close();
-                System.out.println("GIF proses kompresi berhasil disimpan di: " + gifPath);
-            } catch (IOException e) {
-                System.out.println("Gagal menyimpan GIF: " + e.getMessage());
-            }
-        }
         return result;
     }
 
@@ -216,11 +202,6 @@ public class Main {
         if (sizeX <= minSize || sizeY <= minSize || shouldMerge(original, x, y, sizeX, sizeY, method, threshold)) {
             int avgColor = getAvgColor(original, x, y, sizeX, sizeY);
             fillBlock(output, x, y, sizeX, sizeY, avgColor);
-            if (exportGIF && depth <= 10 && !gifSnapshots.containsKey(depth)) {
-                BufferedImage snapshot = new BufferedImage(output.getWidth(), output.getHeight(), BufferedImage.TYPE_INT_RGB);
-                snapshot.getGraphics().drawImage(output, 0, 0, null);
-                gifSnapshots.put(depth, snapshot);
-            }
         } else {
             int halfX = sizeX / 2;
             int halfY = sizeY / 2;
@@ -232,7 +213,7 @@ public class Main {
         }
     }
 
-    private static boolean shouldMerge(BufferedImage img, int x, int y, int w, int h, int method, double threshold) {
+    public static boolean shouldMerge(BufferedImage img, int x, int y, int w, int h, int method, double threshold) {
         switch (method) {
             case 1: return calculateVariance(img, x, y, w, h) <= threshold;
             case 2: return calculateMAD(img, x, y, w, h) <= threshold;
