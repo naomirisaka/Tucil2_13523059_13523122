@@ -50,7 +50,6 @@ public class Main {
 
         int method = 0;
         while (true) {
-            System.out.println();
             System.out.print("Masukkan metode yang ingin digunakan: ");
             String methodInput = scanner.nextLine().trim();
 
