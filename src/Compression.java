@@ -6,7 +6,7 @@ public class Compression {
     public static int nodeAmt = 0;
     public static int maxDepth = 0;
 
-    // Fungsi utama untuk mengompresi gambar menggunakan metode quadtree
+    // Fungsi utama untuk mengkompresi gambar menggunakan metode quadtree
     public static BufferedImage compressImage(BufferedImage img, int method, double threshold, int minSize) {
         int width = img.getWidth();
         int height = img.getHeight();
