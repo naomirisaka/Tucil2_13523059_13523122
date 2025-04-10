@@ -96,7 +96,7 @@ public class Compression {
     }
 
     // Mengecek apakah blok homogen berdasarkan metode dan threshold tertentu
-    private static boolean isHomogenous(BufferedImage img, int x, int y, int w, int h, int method, double threshold) {
+    public static boolean isHomogenous(BufferedImage img, int x, int y, int w, int h, int method, double threshold) {
         switch (method) {
             case 1: return ErrorEvaluation.calculateVariance(img, x, y, w, h) < threshold;
             case 2: return ErrorEvaluation.calculateMAD(img, x, y, w, h) < threshold;
@@ -108,11 +108,13 @@ public class Compression {
     }
 
     // Mengisi blok dengan satu warna (hasil rata-rata)
-    private static void fillBlock(BufferedImage img, int x, int y, int w, int h, int color) {
-        for (int i = x; i < x + w && i < img.getWidth(); i++) {
-            for (int j = y; j < y + h && j < img.getHeight(); j++) {
-                img.setRGB(i, j, color);
+    public static void fillBlock(BufferedImage img, int x, int y, int w, int h, int color) {
+        for (int i = x; i < x + w; i++) {
+            for (int j = y; j < y + h; j++) {
+                if (i >= 0 && i < img.getWidth() && j >= 0 && j < img.getHeight()) {
+                    img.setRGB(i, j, color);
+                }
             }
-        }        
+        }   
     }
 }

@@ -21,7 +21,7 @@ public class Main {
             System.out.println();
             System.out.print("Masukkan nama file gambar (diakhiri dengan .jpg, .jpeg, atau .png): ");
             inputPath = scanner.nextLine().trim();
-            
+
             // Validasi ekstensi file
             if (!(inputPath.toLowerCase().endsWith(".jpg") || inputPath.toLowerCase().endsWith(".jpeg") || inputPath.toLowerCase().endsWith(".png"))) {
                 System.out.println("Format file tidak didukung. Harus diakhiri dengan .jpg, .jpeg, atau .png.");
@@ -52,13 +52,19 @@ public class Main {
         while (true) {
             System.out.println();
             System.out.print("Masukkan metode yang ingin digunakan: ");
-            if (scanner.hasNextInt()) {
-                method = scanner.nextInt();
+            String methodInput = scanner.nextLine().trim();
+
+            if (methodInput.isEmpty()) {
+                System.out.println("Input tidak boleh kosong.");
+                continue;
+            }
+
+            try {
+                method = Integer.parseInt(methodInput);
                 if (method >= 1 && method <= 5) break;
                 else System.out.println("Masukkan angka antara 1 sampai 5.");
-            } else {
+            } catch (NumberFormatException e) {
                 System.out.println("Input harus berupa angka.");
-                scanner.next(); 
             }
         }
 
@@ -80,11 +86,20 @@ public class Main {
         double threshold = 0;
         while (true) {
             System.out.print("Masukkan nilai ambang batas (threshold): ");
-            if (scanner.hasNextDouble()) {
-                threshold = scanner.nextDouble();
-            } else {
+            String thresholdInput = scanner.nextLine().trim();
+
+            if (thresholdInput.isEmpty()) {
+                System.out.println("Input tidak boleh kosong.");
+                System.out.println();
+                continue;
+            }
+
+            try {
+                threshold = Double.parseDouble(thresholdInput);
+            } catch (NumberFormatException e) {
                 System.out.println("Input harus berupa angka.");
-                scanner.next(); 
+                System.out.println();
+                continue;
             }
 
             boolean isValid = true;
@@ -126,20 +141,26 @@ public class Main {
         int minBlockSize = 0;
         while (true) {
             System.out.print("Masukkan ukuran blok minimum: ");
-            if (scanner.hasNextInt()) {
-                minBlockSize = scanner.nextInt();
+            String minBlockInput = scanner.nextLine().trim();
+
+            if (minBlockInput.isEmpty()) {
+                System.out.println("Input tidak boleh kosong.");
+                System.out.println();
+                continue;
+            }
+
+            try {
+                minBlockSize = Integer.parseInt(minBlockInput);
                 if (minBlockSize > 0) break;
                 else {
                     System.out.println("Ukuran blok minimum harus lebih besar dari 0.");
                     System.out.println();
                 }
-            } else {
+            } catch (NumberFormatException e) {
                 System.out.println("Input harus berupa angka.");
                 System.out.println();
-                scanner.next(); 
             }
         }
-        scanner.nextLine();
 
         // Input target rasio kompresi (opsional)
         double targetRatio = 0;
@@ -147,30 +168,68 @@ public class Main {
 
         while (true) {
             System.out.print("Masukkan target rasio kompresi (0 jika tidak ingin menggunakan fitur ini): ");
-            if (scanner.hasNextDouble()) {
-                targetRatio = scanner.nextDouble();
+            String ratioInput = scanner.nextLine().trim();
+
+            if (ratioInput.isEmpty()) {
+                System.out.println("Input tidak boleh kosong.\n");
+                continue;
+            }
+
+            try {
+                targetRatio = Double.parseDouble(ratioInput);
                 if (targetRatio < 0 || targetRatio > 1) {
                     System.out.println("Target rasio kompresi harus berada antara 0 dan 1.\n");
-                } else if (targetRatio == 0) { 
+                } else if (targetRatio == 0) {
                     break;
                 } else {
-                    tolerance = 0.003; // default tolerance
+                    tolerance = 0.003;
                     break;
                 }
-            } else {
-                System.out.println("Input harus berupa angka.\n");
-                scanner.next();
+            } catch (NumberFormatException e) {
+                System.out.println("Input harus berupa angka.");
+                System.out.println();
             }
         }
-        scanner.nextLine();
 
         // Input nama file output dan validasi format
         String outputPath;
         while (true) {
             System.out.print("Masukkan nama file hasil kompresi (diakhiri dengan .jpg, .jpeg, atau .png): ");
             outputPath = scanner.nextLine().trim();
+
+            if (outputPath.isEmpty()) {
+                System.out.println("Input tidak boleh kosong.");
+                System.out.println();
+                continue;
+            }
+
             if (outputPath.toLowerCase().endsWith(".jpg") || outputPath.toLowerCase().endsWith(".jpeg") || outputPath.toLowerCase().endsWith(".png")) break;
             else System.out.println("Format file tidak didukung. Harus berakhir dengan .jpg, .jpeg, atau .png.\n");
+        }
+
+        // Input pilihan untuk menyimpan GIF
+        boolean exportGIF = false;
+        String gifPath = "";
+        while (true) {
+            System.out.print("Apakah Anda ingin menyimpan GIF hasil kompresi? (ya/tidak): ");
+            String gifOption = scanner.nextLine().trim().toLowerCase();
+
+            if (gifOption.isEmpty()) {
+                System.out.println("Input tidak boleh kosong.");
+                System.out.println();
+                continue;
+            }
+
+            if (gifOption.equals("ya") || gifOption.equals("y")) {
+                exportGIF = true;
+                gifPath = outputPath.replaceAll("\\.[^.]+$", ".gif");
+                break;
+            } else if (gifOption.equals("tidak") || gifOption.equals("t")) {
+                break;
+            } else {
+                System.out.println("Pilihan tidak valid. Silakan masukkan 'ya' atau 'tidak'.");
+                System.out.println();
+            }
         }
 
         try {
@@ -178,7 +237,7 @@ public class Main {
             BufferedImage ogImage = ImageIO.read(inputFile);
             int ogSize = (int) inputFile.length();
 
-            // Kompresi dimulai
+            // Melakukan kompresi
             long startTime = System.nanoTime();
             BufferedImage compressedImage;
 
@@ -225,6 +284,23 @@ public class Main {
             System.out.println("Jumlah simpul pada pohon: " + Compression.nodeAmt);
             System.out.println("========================================================================================================");
             System.out.println("Gambar hasil kompresi disimpan di: " + outputPath);
+            if (exportGIF) {
+                try {
+                    GIFExporter.exportGIFPerDepth(
+                        ogImage,
+                        method,
+                        threshold,
+                        minBlockSize,
+                        gifPath,
+                        Compression.maxDepth,
+                        ogImage.getWidth(),
+                        ogImage.getHeight()
+                    );
+                    System.out.println("GIF hasil kompresi disimpan di: " + gifPath);
+                } catch (Exception e) {
+                    System.out.println("GIF gagal disimpan: " + e.getMessage());
+                }
+            }
             System.out.println("========================================================================================================");
             System.out.println();
         } catch (Exception e) {
