@@ -1,19 +1,20 @@
 import java.awt.image.RenderedImage;
 import java.io.IOException;
+import java.util.Iterator;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
-import java.util.Iterator;
-import javax.imageio.ImageTypeSpecifier;
 
 public class GIFSequenceWriter {
     protected ImageWriter gifWriter;
     protected ImageWriteParam imageWriteParam;
     protected IIOMetadata imageMetaData;
 
+    // Menyiapkan GIF sequence writer untuk menulis GIF
     public GIFSequenceWriter(ImageOutputStream outputStream, int imageType, int timeBetweenFramesMS, boolean loopContinuously) throws IOException {
         gifWriter = getWriter();
         imageWriteParam = gifWriter.getDefaultWriteParam();
@@ -24,6 +25,7 @@ public class GIFSequenceWriter {
         String metaFormatName = imageMetaData.getNativeMetadataFormatName();
         IIOMetadataNode root = (IIOMetadataNode) imageMetaData.getAsTree(metaFormatName);
 
+        // Atur node metadata untuk GIF
         IIOMetadataNode graphicsControlExtensionNode = getNode(root, "GraphicControlExtension");
         graphicsControlExtensionNode.setAttribute("disposalMethod", "none");
         graphicsControlExtensionNode.setAttribute("userInputFlag", "FALSE");
@@ -47,14 +49,17 @@ public class GIFSequenceWriter {
         gifWriter.prepareWriteSequence(null);
     }
 
+    // Menulis frame gambar ke dalam GIF sequence
     public void writeToSequence(RenderedImage img) throws IOException {
         gifWriter.writeToSequence(new javax.imageio.IIOImage(img, null, imageMetaData), imageWriteParam);
     }
 
+    // Mengakhiri penulisan GIF sequence
     public void close() throws IOException {
         gifWriter.endWriteSequence();
     }
 
+    // Mendapatkan ImageWriter untuk GIF
     private static ImageWriter getWriter() throws IOException {
         Iterator<ImageWriter> writers = ImageIO.getImageWritersBySuffix("gif");
         if (!writers.hasNext()) {
@@ -63,6 +68,7 @@ public class GIFSequenceWriter {
         return writers.next();
     }
 
+    // Mendapatkan atau menambahkan node metadata berdasarkan namanya
     private static IIOMetadataNode getNode(IIOMetadataNode rootNode, String nodeName) {
         for (int i = 0; i < rootNode.getLength(); i++) {
             if (rootNode.item(i).getNodeName().equalsIgnoreCase(nodeName)) {
