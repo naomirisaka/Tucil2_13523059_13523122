@@ -77,9 +77,7 @@ public class Main {
             System.out.println("Semakin rendah threshold, maka blok digabung walau kurang mirip.");
             System.out.println("================================================================================");
             System.out.println();
-        } else {
-            System.out.println();
-        }
+        } 
 
         // Input nilai threshold dengan validasi berdasarkan metode
         double threshold = 0;
@@ -197,13 +195,53 @@ public class Main {
             outputPath = scanner.nextLine().trim();
 
             if (outputPath.isEmpty()) {
-                System.out.println("Input tidak boleh kosong.");
-                System.out.println();
+                System.out.println("Input tidak boleh kosong.\n");
                 continue;
             }
 
-            if (outputPath.toLowerCase().endsWith(".jpg") || outputPath.toLowerCase().endsWith(".jpeg") || outputPath.toLowerCase().endsWith(".png")) break;
-            else System.out.println("Format file tidak didukung. Harus berakhir dengan .jpg, .jpeg, atau .png.\n");
+            if (!(outputPath.toLowerCase().endsWith(".jpg") || outputPath.toLowerCase().endsWith(".jpeg") || outputPath.toLowerCase().endsWith(".png"))) {
+                System.out.println("Format file tidak didukung. Harus berakhir dengan .jpg, .jpeg, atau .png.\n");
+                continue;
+            }
+
+            File outputFile = new File(outputPath);
+            File parentDir = outputFile.getParentFile();
+
+            if (parentDir != null && !parentDir.exists()) {
+                boolean retryOutput = false;
+                while (true) {
+                    System.out.print("Folder tujuan tidak ada. Apakah Anda ingin membuatnya? (ya/tidak): ");
+                    String confirm = scanner.nextLine().trim().toLowerCase();
+
+                    if (confirm.isEmpty()) {
+                        System.out.println("Input tidak boleh kosong.\n");
+                        continue;
+                    }
+
+                    if (confirm.equals("ya") || confirm.equals("y")) {
+                        try {
+                            if (!parentDir.mkdirs()) {
+                                System.out.println("Gagal membuat folder tujuan.");
+                                System.exit(1);
+                            }
+                            break;
+                        } catch (SecurityException e) {
+                            System.out.println("Tidak memiliki izin untuk membuat folder.");
+                            System.exit(1);
+                        }
+                    } else if (confirm.equals("tidak") || confirm.equals("t")) {
+                        System.out.println("Silakan masukkan ulang nama file output.\n");
+                        retryOutput = true;
+                        break; 
+                    } else {
+                        System.out.println("Pilihan tidak valid. Silakan masukkan 'ya' atau 'tidak'.\n");
+                    }
+                }
+
+                if (retryOutput) continue; 
+            }
+
+            break; 
         }
 
         // Input pilihan untuk menyimpan GIF
